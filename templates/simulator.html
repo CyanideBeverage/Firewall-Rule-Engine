@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Packet Simulator | Firewall Rule Engine{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Interactive Packet Simulator</h3>
+        <small class="text-muted">Craft custom network packets and visualize real-time rule inspection.</small>
+    </div>
+    <form action="{{ url_for('simulator_batch') }}" method="POST" class="m-0">
+        <button type="submit" class="btn btn-outline-info">
+            <i class="bi bi-lightning-charge-fill me-1"></i> Simulate 8-Packet Burst
+        </button>
+    </form>
+</div>
+
+<div class="row g-4">
+    <!-- Left Packet Builder -->
+    <div class="col-lg-5">
+        <div class="soc-card">
+            <div class="soc-card-header py-3 px-4 fw-semibold">
+                <i class="bi bi-terminal-fill me-2 text-info"></i> Packet Header Builder
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-muted">Quick Scenario Presets:</label>
+                    <div class="d-flex flex-wrap gap-1">
+                        <button type="button" class="btn btn-outline-success btn-sm preset-btn"
+                                data-src="192.168.1.25" data-dst="10.0.0.10" data-sport="51234" data-dport="443" data-proto="TCP" data-dir="INBOUND">
+                            Allowed HTTPS
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm preset-btn"
+                                data-src="203.0.113.50" data-dst="10.0.0.10" data-sport="44000" data-dport="443" data-proto="TCP" data-dir="INBOUND">
+                            Attacker IP
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm preset-btn"
+                                data-src="8.8.8.8" data-dst="10.0.0.5" data-sport="55000" data-dport="22" data-proto="TCP" data-dir="INBOUND">
+                            External SSH
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm preset-btn"
+                                data-src="192.168.1.15" data-dst="10.0.0.10" data-sport="" data-dport="" data-proto="ICMP" data-dir="INBOUND">
+                            ICMP Ping
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm preset-btn"
+                                data-src="172.16.0.5" data-dst="10.0.0.99" data-sport="60000" data-dport="9999" data-proto="UDP" data-dir="INBOUND">
+                            Default Policy
+                        </button>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('simulator') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Source IP *</label>
+                            <input type="text" name="source_ip" id="simSourceIp" class="form-control mono"
+                                   value="{{ packet_input.source_ip }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Destination IP *</label>
+                            <input type="text" name="dest_ip" id="simDestIp" class="form-control mono"
+                                   value="{{ packet_input.dest_ip }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Protocol *</label>
+                            <select name="protocol" id="simProtocol" class="form-select">
+                                {% for proto in ['TCP', 'UDP', 'ICMP'] %}
+                                <option value="{{ proto }}" {% if packet_input.protocol == proto %}selected{% endif %}>{{ proto }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Direction *</label>
+                            <select name="direction" id="simDirection" class="form-select">
+                                <option value="INBOUND" {% if packet_input.direction == 'INBOUND' %}selected{% endif %}>INBOUND</option>
+                                <option value="OUTBOUND" {% if packet_input.direction == 'OUTBOUND' %}selected{% endif %}>OUTBOUND</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Source Port</label>
+                            <input type="text" name="source_port" id="simSourcePort" class="form-control mono"
+                                   value="{{ packet_input.source_port }}" placeholder="e.g., 54321">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Destination Port</label>
+                            <input type="text" name="dest_port" id="simDestPort" class="form-control mono"
+                                   value="{{ packet_input.dest_port }}" placeholder="e.g., 443">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-info text-dark w-100 mt-4 py-2 fw-bold">
+                        <i class="bi bi-cpu-fill me-1"></i> Inspect Packet Through Firewall
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Visual Result & Step-by-Step Trace -->
+    <div class="col-lg-7">
+        {% if result and result.valid %}
+        <div class="soc-card mb-4 overflow-hidden">
+            <div class="py-3 px-4 d-flex justify-content-between align-items-center
+                {% if result.decision == 'ALLOW' %}bg-success bg-opacity-25 border-bottom border-success{% else %}bg-danger bg-opacity-25 border-bottom border-danger{% endif %}">
+                <span class="fw-bold fs-5 {% if result.decision == 'ALLOW' %}text-success{% else %}text-danger{% endif %}">
+                    <i class="bi {% if result.decision == 'ALLOW' %}bi-shield-fill-check{% else %}bi-shield-fill-x{% endif %} me-2"></i>
+                    VERDICT: {{ result.decision }}
+                </span>
+                <span class="badge bg-dark border border-secondary mono">
+                    {% if result.default_policy_applied %}DEFAULT POLICY{% else %}RULE #{{ result.matched_rule.id }} (P{{ result.matched_rule.priority }}){% endif %}
+                </span>
+            </div>
+
+            <div class="p-4">
+                <!-- Visual Packet Journey Pipeline -->
+                <div class="packet-pipeline mb-3">
+                    <div class="pipeline-node">
+                        <div class="small text-muted">SOURCE HOST</div>
+                        <code class="fw-bold">{{ result.packet.source_ip }}</code>
+                        <div class="small text-muted mono">Port: {{ result.packet.source_port if result.packet.source_port is not none else 'N/A' }}</div>
+                    </div>
+
+                    <div class="pipeline-line {% if result.decision == 'ALLOW' %}allowed{% else %}blocked{% endif %}"></div>
+
+                    <div class="pipeline-node border-info">
+                        <i class="bi {% if result.decision == 'ALLOW' %}bi-shield-check text-success{% else %}bi-shield-x text-danger{% endif %} fs-3"></i>
+                        <div class="small fw-bold mt-1">FIREWALL</div>
+                        <span class="badge badge-proto">{{ result.packet.protocol }} / {{ result.packet.direction }}</span>
+                    </div>
+
+                    <div class="pipeline-line {% if result.decision == 'ALLOW' %}allowed{% else %}blocked{% endif %}"></div>
+
+                    <div class="pipeline-node {% if result.decision == 'DENY' %}opacity-50{% endif %}">
+                        <div class="small text-muted">DESTINATION</div>
+                        <code class="fw-bold">{{ result.packet.dest_ip }}</code>
+                        <div class="small text-muted mono">Port: {{ result.packet.dest_port if result.packet.dest_port is not none else 'N/A' }}</div>
+                    </div>
+                </div>
+
+                <p class="mb-0 small"><strong>Decision Reason:</strong> {{ result.reason }}</p>
+            </div>
+        </div>
+
+        <!-- Step-by-Step Evaluation Trace -->
+        <div class="soc-card overflow-hidden">
+            <div class="soc-card-header fw-semibold py-3 px-4">
+                <i class="bi bi-diagram-3-fill me-2 text-info"></i> Rule Evaluation Trace (First-Match-Wins)
+            </div>
+            <div class="table-responsive">
+                <table class="table soc-table small">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Rule</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Evaluation Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trace in result.evaluation_trace %}
+                        <tr class="{% if trace.matched %}row-matched fw-semibold{% endif %}">
+                            <td class="mono">{{ trace.step }}</td>
+                            <td class="mono">#{{ trace.rule_id }} ({{ trace.action }})</td>
+                            <td><span class="badge bg-info text-dark mono">{{ trace.priority }}</span></td>
+                            <td>
+                                {% if trace.matched %}
+                                    <span class="badge badge-allow">MATCHED</span>
+                                {% else %}
+                                    <span class="badge bg-secondary bg-opacity-50">SKIPPED</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ trace.details }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3 text-muted">No active rules existed; default policy applied immediately.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="soc-card h-100 d-flex flex-column justify-content-center align-items-center text-center p-5">
+            <i class="bi bi-radar display-3 text-info opacity-50 mb-3"></i>
+            <h5 class="fw-bold">Awaiting Simulated Packet</h5>
+            <p class="text-muted mb-0" style="max-width: 420px;">
+                Configure packet headers on the left (or click a scenario preset) to visualize the packet journey and rule evaluation trace.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

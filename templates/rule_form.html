@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'Add' }} Firewall Rule | Firewall Rule Engine{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="soc-card overflow-hidden">
+            <div class="soc-card-header py-3 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-shield-plus me-2 text-info"></i>
+                    {{ 'Edit Firewall Rule #' ~ rule.id if mode == 'edit' else 'Create New Firewall Rule' }}
+                </h5>
+                <a href="{{ url_for('rules_list') }}" class="btn btn-sm btn-outline-secondary">Back to Rules</a>
+            </div>
+            <div class="p-4">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Source IP / CIDR *</label>
+                            <input type="text" name="source_ip" class="form-control mono"
+                                   value="{{ rule.source_ip }}" placeholder="ANY, 192.168.1.10, or 192.168.1.0/24" required>
+                            <div class="form-text">Single IP, CIDR subnet, or <code>ANY</code>.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Destination IP / CIDR *</label>
+                            <input type="text" name="dest_ip" class="form-control mono"
+                                   value="{{ rule.dest_ip }}" placeholder="ANY, 10.0.0.10, or 10.0.0.0/24" required>
+                            <div class="form-text">Single IP, CIDR subnet, or <code>ANY</code>.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Protocol *</label>
+                            <select name="protocol" id="ruleProtocol" class="form-select">
+                                {% for proto in ['TCP', 'UDP', 'ICMP', 'ANY'] %}
+                                <option value="{{ proto }}" {% if rule.protocol == proto %}selected{% endif %}>{{ proto }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Source Port</label>
+                            <input type="text" name="source_port" id="ruleSourcePort" class="form-control mono"
+                                   value="{{ rule.source_port }}" placeholder="ANY, 1024-65535">
+                            <div class="form-text">Port (1-65535), range, or <code>ANY</code>.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Destination Port</label>
+                            <input type="text" name="dest_port" id="ruleDestPort" class="form-control mono"
+                                   value="{{ rule.dest_port }}" placeholder="ANY, 80, 443, 8000-8080">
+                            <div class="form-text">Port (1-65535), range, or <code>ANY</code>.</div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Traffic Direction *</label>
+                            <select name="direction" class="form-select">
+                                <option value="INBOUND" {% if rule.direction == 'INBOUND' %}selected{% endif %}>INBOUND</option>
+                                <option value="OUTBOUND" {% if rule.direction == 'OUTBOUND' %}selected{% endif %}>OUTBOUND</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Action *</label>
+                            <select name="action" class="form-select">
+                                <option value="ALLOW" {% if rule.action == 'ALLOW' %}selected{% endif %}>ALLOW</option>
+                                <option value="DENY" {% if rule.action == 'DENY' %}selected{% endif %}>DENY</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Priority (1 - 10000) *</label>
+                            <input type="number" name="priority" class="form-control mono" min="1" max="10000"
+                                   value="{{ rule.priority }}" required>
+                            <div class="form-text">Lower number = higher precedence.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Rule Description *</label>
+                            <input type="text" name="description" class="form-control"
+                                   value="{{ rule.description }}" placeholder="e.g., Allow HTTPS traffic to internal web server" required>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_enabled" name="is_enabled"
+                                       {% if rule.is_enabled %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="is_enabled">Rule Enabled</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 border-secondary border-opacity-25">
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('rules_list') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-info text-dark fw-semibold px-4">
+                            <i class="bi bi-save me-1"></i> {{ 'Update Rule' if mode == 'edit' else 'Create Rule' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}About | Firewall Rule Engine{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Header Banner -->
+        <div class="soc-card mb-4 overflow-hidden">
+            <div class="soc-card-header p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-shield-lock-fill text-info display-5"></i>
+                    <div>
+                        <h3 class="fw-bold mb-1">Firewall Rule Engine</h3>
+                        <p class="mb-0 text-muted">Rule-Based Network Traffic Filtering and Simulation System</p>
+                    </div>
+                </div>
+                <span class="badge bg-info text-dark fs-6 px-3 py-2 fw-bold">Made by SRIJAN SINGH</span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Creator Card -->
+            <div class="col-md-5">
+                <div class="soc-card h-100">
+                    <div class="soc-card-header fw-bold py-3 px-4">
+                        <i class="bi bi-person-badge-fill text-info me-2"></i> About the Creator
+                    </div>
+                    <div class="p-4">
+                        <h5 class="fw-bold mb-1">SRIJAN SINGH</h5>
+                        <p class="text-info small mb-3">Creator & Cybersecurity Developer</p>
+
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-3 d-flex align-items-start gap-2">
+                                <i class="bi bi-geo-alt-fill text-danger mt-1"></i>
+                                <div>
+                                    <div class="small text-muted">Location</div>
+                                    <div class="fw-semibold">New Delhi, India</div>
+                                </div>
+                            </li>
+                            <li class="mb-3 d-flex align-items-start gap-2">
+                                <i class="bi bi-envelope-fill text-info mt-1"></i>
+                                <div>
+                                    <div class="small text-muted">Contact Email</div>
+                                    <a href="mailto:cyanideverage@gmail.com" class="fw-semibold text-info text-decoration-none">
+                                        cyanideverage@gmail.com
+                                    </a>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-start gap-2">
+                                <i class="bi bi-github text-white mt-1"></i>
+                                <div>
+                                    <div class="small text-muted">GitHub</div>
+                                    <a href="https://github.com/CyanideBeverage" target="_blank" rel="noopener noreferrer"
+                                       class="fw-semibold text-info text-decoration-none">
+                                        github.com/CyanideBeverage <i class="bi bi-box-arrow-up-right small"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Purpose Card -->
+            <div class="col-md-7">
+                <div class="soc-card h-100">
+                    <div class="soc-card-header fw-bold py-3 px-4">
+                        <i class="bi bi-cpu-fill text-info me-2"></i> What This System Does
+                    </div>
+                    <div class="p-4">
+                        <p class="mb-3">
+                            <strong>Firewall Rule Engine</strong> is a web-based cybersecurity simulation built to demonstrate how a
+                            <strong>stateless Layer 3 / Layer 4 packet-filtering firewall</strong> inspects and controls network traffic.
+                        </p>
+                        <ul class="small mb-3">
+                            <li class="mb-1"><strong>Packet Inspection:</strong> Evaluates simulated inbound and outbound packets by Source/Destination IP (including CIDR subnets), Ports, and Protocols (TCP, UDP, ICMP).</li>
+                            <li class="mb-1"><strong>Priority-Based First-Match-Wins:</strong> Checks active rules in ascending priority order and applies the first matching <code>ALLOW</code> or <code>DENY</code> rule.</li>
+                            <li class="mb-1"><strong>Configurable Default Policy:</strong> Falls back to <code>DENY</code> (Zero Trust) or <code>ALLOW</code> when no rule matches.</li>
+                            <li class="mb-1"><strong>Security & Auditing:</strong> Uses salted password hashing, Flask session protection, parameterized SQL queries (preventing SQL Injection), and SIEM audit logs.</li>
+                        </ul>
+                        <div class="alert alert-info small py-2 mb-0">
+                            <i class="bi bi-info-circle-fill me-1"></i>
+                            <strong>Educational Simulation:</strong> Safely simulates firewall logic without modifying your computer's OS firewall or blocking real network traffic.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tech Stack Card -->
+            <div class="col-12">
+                <div class="soc-card">
+                    <div class="soc-card-header fw-bold py-3 px-4">
+                        <i class="bi bi-code-slash text-info me-2"></i> Programming Languages & Technologies Used
+                    </div>
+                    <div class="p-4">
+                        <div class="row g-3 small">
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded border border-secondary border-opacity-25 bg-dark h-100">
+                                    <div class="fw-bold text-info mb-1"><i class="bi bi-filetype-py me-1"></i> Core Language</div>
+                                    <div>Python 3 (<code>ipaddress</code>, <code>sqlite3</code>, <code>unittest</code>)</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded border border-secondary border-opacity-25 bg-dark h-100">
+                                    <div class="fw-bold text-success mb-1"><i class="bi bi-server me-1"></i> Backend & Auth</div>
+                                    <div>Flask, Werkzeug Security (Salted Password Hashing & Sessions)</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded border border-secondary border-opacity-25 bg-dark h-100">
+                                    <div class="fw-bold text-warning mb-1"><i class="bi bi-window me-1"></i> Frontend UI</div>
+                                    <div>HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <div class="p-3 rounded border border-secondary border-opacity-25 bg-dark h-100">
+                                    <div class="fw-bold text-light mb-1"><i class="bi bi-database-fill me-1"></i> Database</div>
+                                    <div>SQLite with Parameterized Queries (SQLi Prevention)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-end">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-info text-dark fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-info text-dark fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,620 @@
+/* =========================================================
+   Firewall Rule Engine — Dual Theme (Dark & White) + Live FX
+   100% Client-Side GPU Transitions (Zero Render Server Load)
+   ========================================================= */
+
+:root {
+    /* Dark Mode Palette (Default) */
+    --bg-base: #060a14;
+    --bg-surface: rgba(15, 23, 42, 0.78);
+    --bg-surface-solid: #0f172a;
+    --bg-surface-hover: rgba(20, 31, 56, 0.92);
+    --bg-input: rgba(8, 14, 28, 0.85);
+    --bg-navbar: rgba(6, 10, 20, 0.82);
+    --border-subtle: rgba(148, 163, 184, 0.16);
+    --border-glow: rgba(56, 189, 248, 0.5);
+    --spotlight-color: rgba(56, 189, 248, 0.11);
+    --grid-line: rgba(148, 163, 184, 0.04);
+    --ambient-1: rgba(56, 189, 248, 0.14);
+    --ambient-2: rgba(16, 185, 129, 0.09);
+
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent-primary: #38bdf8;
+    --accent-primary-end: #0284c7;
+    --accent-btn-text: #061322;
+    --accent-emerald: #10b981;
+    --shadow-card: 0 18px 40px -14px rgba(0, 0, 0, 0.65);
+    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Crisp White / Light Theme */
+html[data-theme="light"] {
+    --bg-base: #f1f5f9;
+    --bg-surface: rgba(255, 255, 255, 0.92);
+    --bg-surface-solid: #ffffff;
+    --bg-surface-hover: #ffffff;
+    --bg-input: #f8fafc;
+    --bg-navbar: rgba(255, 255, 255, 0.88);
+    --border-subtle: rgba(15, 23, 42, 0.1);
+    --border-glow: rgba(2, 132, 199, 0.45);
+    --spotlight-color: rgba(2, 132, 199, 0.08);
+    --grid-line: rgba(15, 23, 42, 0.045);
+    --ambient-1: rgba(14, 165, 233, 0.14);
+    --ambient-2: rgba(16, 185, 129, 0.1);
+
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --accent-primary: #0284c7;
+    --accent-primary-end: #0369a1;
+    --accent-btn-text: #ffffff;
+    --accent-emerald: #059669;
+    --shadow-card: 0 14px 36px -10px rgba(15, 23, 42, 0.12),
+                   0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    background-image:
+        radial-gradient(circle at 12% 8%, var(--ambient-1), transparent 36%),
+        radial-gradient(circle at 88% 88%, var(--ambient-2), transparent 38%),
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.tracking-wide {
+    letter-spacing: 0.09em;
+}
+
+/* ---------- Navbar & Theme Switcher ---------- */
+.navbar {
+    background: var(--bg-navbar) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+.navbar-brand {
+    color: var(--text-main) !important;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.navbar .nav-link {
+    position: relative;
+    color: var(--text-muted) !important;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+    color: var(--accent-primary) !important;
+}
+
+.navbar .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 2px;
+    height: 2px;
+    background: var(--accent-primary);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transition: transform 0.25s var(--ease-smooth);
+}
+
+.navbar .nav-link:hover::after,
+.navbar .nav-link.active::after {
+    transform: scaleX(1);
+}
+
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-main);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s var(--ease-smooth),
+                border-color 0.25s ease,
+                background-color 0.25s ease,
+                box-shadow 0.25s ease;
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -4px var(--border-glow);
+}
+
+/* ---------- Elevated Cards with Mouse Spotlight ---------- */
+.soc-card,
+.card {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-surface) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.28s var(--ease-smooth),
+                border-color 0.28s ease,
+                box-shadow 0.28s ease,
+                background-color 0.35s ease;
+    animation: fadeSlideUp 0.45s var(--ease-smooth) both;
+}
+
+.soc-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        420px circle at var(--mx, 50%) var(--my, 50%),
+        var(--spotlight-color),
+        transparent 62%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.soc-card:hover::before {
+    opacity: 1;
+}
+
+.soc-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.soc-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-glow) !important;
+    background: var(--bg-surface-hover) !important;
+}
+
+.soc-card-header {
+    background: linear-gradient(180deg, var(--spotlight-color) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ---------- Light Mode Readability Overrides ---------- */
+html[data-theme="light"] .text-info {
+    color: #0284c7 !important;
+}
+
+html[data-theme="light"] .text-success {
+    color: #059669 !important;
+}
+
+html[data-theme="light"] .badge.bg-info {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+html[data-theme="light"] .btn-outline-info {
+    color: #0284c7;
+    border-color: #0284c7;
+}
+
+html[data-theme="light"] .btn-outline-info:hover {
+    background-color: #0284c7;
+    color: #ffffff;
+}
+
+html[data-theme="light"] .btn-outline-secondary {
+    color: #475569;
+    border-color: rgba(15, 23, 42, 0.2);
+}
+
+html[data-theme="light"] footer,
+html[data-theme="light"] footer a {
+    color: #475569 !important;
+    border-color: var(--border-subtle) !important;
+}
+
+/* Adapt SVG Shield interior fills for Light Mode */
+html[data-theme="light"] .cyber-shield-glow path[fill="#0b1221"],
+html[data-theme="light"] .cyber-shield-glow circle[fill="#0f172a"],
+html[data-theme="light"] .cyber-shield-glow rect[fill="#0f172a"] {
+    fill: #ffffff !important;
+}
+
+/* ---------- Radiating Live Green Dot ---------- */
+.live-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--accent-emerald);
+    display: inline-block;
+    position: relative;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.95),
+                0 0 20px rgba(16, 185, 129, 0.55);
+}
+
+.live-dot::before,
+.live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-emerald);
+    animation: pulseRadar 2s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+    pointer-events: none;
+}
+
+.live-dot::after {
+    animation-delay: 1s;
+}
+
+/* ---------- Glowing Floating Cyber Shield & Moving Lines ---------- */
+.cyber-shield-glow {
+    overflow: visible;
+    will-change: transform, filter;
+    animation: floatShieldDark 3.2s ease-in-out infinite;
+}
+
+html[data-theme="light"] .cyber-shield-glow {
+    animation: floatShieldLight 3.2s ease-in-out infinite;
+}
+
+/* Dashed packet lines streaming into the firewall shield */
+.cyber-shield-glow line[stroke-dasharray] {
+    stroke-linecap: round;
+    animation: packetFlow 0.85s linear infinite;
+}
+
+/* Subtle glow pulse on the protected green output line */
+.cyber-shield-glow line[stroke="#10b981"] {
+    animation: outputPulse 2s ease-in-out infinite;
+}
+
+/* ---------- Form Inputs ---------- */
+.form-label {
+    color: var(--text-main);
+}
+
+.form-control,
+.form-select {
+    background-color: var(--bg-input) !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-main) !important;
+    border-radius: 10px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.25s ease;
+}
+
+.form-control::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.75;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--spotlight-color) !important;
+}
+
+.input-group .form-control {
+    border-radius: 0;
+}
+
+.input-group > :first-child {
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 10px !important;
+}
+
+.input-group > :last-child {
+    border-top-right-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+}
+
+.input-group-text {
+    background-color: var(--bg-surface-solid) !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-muted) !important;
+}
+
+/* ---------- Modern Buttons with Shine Effect ---------- */
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: transform 0.18s var(--ease-smooth),
+                box-shadow 0.22s ease,
+                filter 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1.5px);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn-info {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-end)) !important;
+    color: var(--accent-btn-text) !important;
+    border: none !important;
+    box-shadow: 0 8px 20px -6px var(--border-glow);
+}
+
+.btn-info::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transition: left 0.55s ease;
+}
+
+.btn-info:hover::after {
+    left: 130%;
+}
+
+.btn-info:hover {
+    box-shadow: 0 12px 26px -6px var(--border-glow);
+    filter: brightness(1.05);
+}
+
+/* ---------- Tables ---------- */
+.table {
+    color: var(--text-main) !important;
+    border-color: var(--border-subtle) !important;
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text-main);
+}
+
+.table thead th {
+    background-color: var(--bg-input) !important;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border-subtle) !important;
+}
+
+.table tbody tr {
+    transition: background-color 0.18s ease;
+}
+
+.table tbody tr:hover {
+    background-color: var(--spotlight-color) !important;
+}
+
+/* ---------- Top Navigation Progress Bar ---------- */
+#page-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    z-index: 9999;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-emerald));
+    box-shadow: 0 0 10px var(--accent-primary);
+    opacity: 0;
+    transition: width 0.35s var(--ease-smooth), opacity 0.25s ease;
+    pointer-events: none;
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-subtle);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseRadar {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.95;
+    }
+    100% {
+        transform: scale(2.8);
+        opacity: 0;
+    }
+}
+
+@keyframes floatShieldDark {
+    0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.45))
+                drop-shadow(0 0 28px rgba(56, 189, 248, 0.22));
+    }
+    50% {
+        transform: translateY(-10px);
+        filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.85))
+                drop-shadow(0 0 38px rgba(16, 185, 129, 0.35));
+    }
+}
+
+@keyframes floatShieldLight {
+    0%, 100% {
+        transform: translateY(0px);
+        filter: drop-shadow
+        /* =========================================================
+   Add-On: Smooth Transitions + Light/White Theme Toggle
+   (Keeps your original Dark UI 100% untouched)
+   ========================================================= */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body, .navbar, .soc-card, .card, .form-control, .form-select, .btn {
+    transition: background-color 0.28s ease, color 0.25s ease,
+                border-color 0.25s ease, transform 0.22s ease,
+                box-shadow 0.25s ease;
+}
+
+/* Subtle lift & glow on hover */
+.soc-card:hover, .card:hover {
+    transform: translateY(-3px);
+}
+
+.btn:hover {
+    transform: translateY(-1.5px);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Navbar Theme Toggle Pill */
+.theme-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(15, 23, 42, 0.75);
+    color: #f1f5f9;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.theme-toggle-btn:hover {
+    border-color: #38bdf8;
+    transform: translateY(-1px);
+}
+
+/* Top Navigation Progress Bar */
+#page-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    z-index: 9999;
+    background: linear-gradient(90deg, #38bdf8, #10b981);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+    opacity: 0;
+    transition: width 0.35s ease, opacity 0.25s ease;
+    pointer-events: none;
+}
+
+/* ---------- White / Light Theme Overrides ---------- */
+html[data-theme="light"] body {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    background-image:
+        radial-gradient(circle at 12% 8%, rgba(14, 165, 233, 0.12), transparent 36%),
+        linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px) !important;
+}
+
+html[data-theme="light"] .navbar {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.1) !important;
+}
+
+html[data-theme="light"] .navbar-brand,
+html[data-theme="light"] h1, html[data-theme="light"] h2,
+html[data-theme="light"] h3, html[data-theme="light"] h4,
+html[data-theme="light"] .form-label {
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .navbar .nav-link,
+html[data-theme="light"] .text-muted,
+html[data-theme="light"] footer,
+html[data-theme="light"] footer a {
+    color: #475569 !important;
+}
+
+html[data-theme="light"] .soc-card,
+html[data-theme="light"] .card {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border: 1px solid rgba(15, 23, 42, 0.1) !important;
+    box-shadow: 0 12px 30px -10px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-theme="light"] .soc-card-header {
+    background: rgba(2, 132, 199, 0.06) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+html[data-theme="light"] .form-control,
+html[data-theme="light"] .form-select,
+html[data-theme="light"] .input-group-text {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: rgba(15, 23, 42, 0.16) !important;
+}
+
+html[data-theme="light"] .table {
+    color: #0f172a !important;
+    --bs-table-bg: transparent;
+    --bs-table-color: #0f172a;
+}
+
+html[data-theme="light"] .theme-toggle-btn {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: rgba(15, 23, 42, 0.18);
+}
+
+html[data-theme="light"] .cyber-shield-glow path[fill="#0b1221"],
+html[data-theme="light"] .cyber-shield-glow circle[fill="#0f172a"],
+html[data-theme="light"] .cyber-shield-glow rect[fill="#0f172a"] {
+    fill: #ffffff !important;
+}

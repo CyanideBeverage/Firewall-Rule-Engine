@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Firewall Rule Engine{% endblock %}
+
+{% block content %}
+<!-- Top SOC Status Bar -->
+<div class="soc-card p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div class="d-flex align-items-center gap-3">
+        <span class="live-dot"></span>
+        <div>
+            <h4 class="fw-bold mb-0">Security Operations Dashboard</h4>
+            <small class="text-muted">Engine Status: <span class="text-success fw-semibold">ACTIVE</span> &bull; Inspection Mode: Stateless L3/L4</small>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="badge fs-6 px-3 py-2 {% if default_policy == 'DENY' %}badge-deny{% else %}badge-allow{% endif %}">
+            Default Policy: {{ default_policy }}
+        </span>
+
+        <form action="{{ url_for('simulator_batch') }}" method="POST" class="m-0">
+            <button type="submit" class="btn btn-outline-info">
+                <i class="bi bi-lightning-charge-fill me-1"></i> Simulate 8-Packet Burst
+            </button>
+        </form>
+
+        <a href="{{ url_for('simulator') }}" class="btn btn-info text-dark fw-semibold">
+            <i class="bi bi-play-circle-fill me-1"></i> Packet Simulator
+        </a>
+    </div>
+</div>
+
+<!-- 4 KPI Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="soc-card stat-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Packets Inspected</div>
+                    <h2 class="fw-bold mb-0 mt-1 mono">{{ stats.total_packets }}</h2>
+                </div>
+                <div class="stat-icon-box bg-primary bg-opacity-25 text-info">
+                    <i class="bi bi-activity"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="soc-card stat-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Allowed Traffic</div>
+                    <h2 class="fw-bold text-success mb-0 mt-1 mono">{{ stats.allowed_packets }}</h2>
+                </div>
+                <div class="stat-icon-box bg-success bg-opacity-25 text-success">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="soc-card stat-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Blocked / Denied</div>
+                    <h2 class="fw-bold text-danger mb-0 mt-1 mono">{{ stats.denied_packets }}</h2>
+                </div>
+                <div class="stat-icon-box bg-danger bg-opacity-25 text-danger">
+                    <i class="bi bi-shield-x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="soc-card stat-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <div class="text-muted small text-uppercase fw-semibold">Active Rules / Block Rate</div>
+                    <h2 class="fw-bold mb-0 mt-1 mono">{{ stats.active_rules }}<small class="fs-6 text-muted">/{{ stats.total_rules }}</small></h2>
+                </div>
+                <div class="stat-icon-box bg-warning bg-opacity-25 text-warning">
+                    <i class="bi bi-sliders"></i>
+                </div>
+            </div>
+            <div class="progress" style="height: 6px; background-color: #1e293b;">
+                <div class="progress-bar bg-danger" style="width: {{ stats.block_rate }}%;" title="Block Rate: {{ stats.block_rate }}%"></div>
+            </div>
+            <small class="text-muted">Threat Block Rate: <strong>{{ stats.block_rate }}%</strong></small>
+        </div>
+    </div>
+</div>
+
+<!-- Dual Analytics Charts -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="soc-card h-100">
+            <div class="soc-card-header fw-semibold py-3 px-4">
+                <i class="bi bi-pie-chart-fill me-2 text-info"></i> Allowed vs. Denied Ratio
+            </div>
+            <div class="p-4 d-flex flex-column justify-content-center align-items-center">
+                {% if stats.total_packets > 0 %}
+                    <div style="width: 100%; max-width: 270px;">
+                        <canvas id="trafficChart"
+                                data-allowed="{{ stats.allowed_packets }}"
+                                data-denied="{{ stats.denied_packets }}"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-bar-chart fs-1 d-block mb-2 text-info opacity-50"></i>
+                        <p class="mb-2">No packets simulated yet.</p>
+                        <form action="{{ url_for('simulator_batch') }}" method="POST">
+                            <button type="submit" class="btn btn-sm btn-outline-info">Run 8-Packet Demo Burst</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="soc-card h-100">
+            <div class="soc-card-header fw-semibold py-3 px-4">
+                <i class="bi bi-bar-chart-line-fill me-2 text-info"></i> Traffic Distribution by Protocol (L4)
+            </div>
+            <div class="p-4 d-flex align-items-center justify-content-center">
+                {% if stats.total_packets > 0 %}
+                    <div style="width: 100%; max-height: 250px;">
+                        <canvas id="protocolChart"
+                                data-tcp="{{ stats.protocol_stats.TCP }}"
+                                data-udp="{{ stats.protocol_stats.UDP }}"
+                                data-icmp="{{ stats.protocol_stats.ICMP }}"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <p class="mb-0">Simulate packets to view TCP, UDP, and ICMP traffic metrics.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Table -->
+<div class="soc-card">
+    <div class="soc-card-header d-flex justify-content-between align-items-center py-3 px-4">
+        <span class="fw-semibold"><i class="bi bi-clock-history me-2 text-info"></i> Live Packet Inspection Feed</span>
+        <a href="{{ url_for('logs_view') }}" class="btn btn-sm btn-outline-info">Open Full Audit Logs</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table soc-table small">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Direction</th>
+                    <th>Packet Flow (Source &rarr; Destination)</th>
+                    <th>Protocol</th>
+                    <th>Decision</th>
+                    <th>Matched Rule</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in stats.recent_logs %}
+                <tr>
+                    <td class="text-nowrap text-muted mono">{{ log.timestamp }}</td>
+                    <td><span class="badge bg-secondary bg-opacity-50">{{ log.direction }}</span></td>
+                    <td>
+                        <code>{{ log.source_ip }}:{{ log.source_port }}</code>
+                        <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                        <code>{{ log.dest_ip }}:{{ log.dest_port }}</code>
+                    </td>
+                    <td><span class="badge badge-proto">{{ log.protocol }}</span></td>
+                    <td>
+                        <span class="badge {% if log.decision == 'ALLOW' %}badge-allow{% else %}badge-deny{% endif %}">
+                            {{ log.decision }}
+                        </span>
+                    </td>
+                    <td class="text-truncate" style="max-width: 260px;" title="{{ log.matched_rule_desc }}">
+                        {{ log.matched_rule_desc }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No packet evaluations recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

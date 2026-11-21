@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Firewall Rules | Firewall Rule Engine{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-0">Firewall Policy & Rule Table</h3>
+        <small class="text-muted">Evaluated top-to-bottom by <strong>Priority</strong> (lower number = evaluated first). First match wins.</small>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <!-- Configurable Default Policy Form -->
+        <form action="{{ url_for('update_default_policy') }}" method="POST"
+              class="d-flex align-items-center gap-2 soc-card px-3 py-2">
+            <label for="default_policy" class="small fw-semibold mb-0 text-nowrap">Default Policy:</label>
+            <select name="default_policy" id="default_policy" class="form-select form-select-sm" style="width: auto;">
+                <option value="DENY" {% if default_policy == 'DENY' %}selected{% endif %}>DENY (Zero Trust)</option>
+                <option value="ALLOW" {% if default_policy == 'ALLOW' %}selected{% endif %}>ALLOW</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-info">Save</button>
+        </form>
+
+        <a href="{{ url_for('export_rules') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-download me-1"></i> Export JSON
+        </a>
+
+        <a href="{{ url_for('add_rule_view') }}" class="btn btn-info text-dark fw-semibold">
+            <i class="bi bi-plus-circle-fill me-1"></i> Add New Rule
+        </a>
+    </div>
+</div>
+
+<!-- Live Rule Search Bar -->
+<div class="soc-card p-3 mb-3">
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search text-info"></i></span>
+        <input type="text" id="liveTableSearch" class="form-control"
+               placeholder="Filter rules instantly by IP, CIDR, port, protocol (TCP/UDP/ICMP), or description...">
+    </div>
+</div>
+
+<div class="soc-card overflow-hidden">
+    <div class="table-responsive">
+        <table class="table soc-table">
+            <thead>
+                <tr>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Direction</th>
+                    <th>Protocol</th>
+                    <th>Source IP / Port</th>
+                    <th>Destination IP / Port</th>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th class="text-end">Manage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rule in rules %}
+                <tr class="searchable-row {% if not rule.is_enabled %}row-disabled{% endif %}">
+                    <td><span class="badge bg-info text-dark mono fs-6">{{ rule.priority }}</span></td>
+                    <td>
+                        {% if rule.is_enabled %}
+                            <span class="badge badge-allow"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-secondary bg-opacity-50">{{ rule.direction }}</span></td>
+                    <td><span class="badge badge-proto">{{ rule.protocol }}</span></td>
+                    <td>
+                        <div><code>{{ rule.source_ip }}</code></div>
+                        <small class="text-muted mono">Port: {{ rule.source_port }}</small>
+                    </td>
+                    <td>
+                        <div><code>{{ rule.dest_ip }}</code></div>
+                        <small class="text-muted mono">Port: {{ rule.dest_port }}</small>
+                    </td>
+                    <td>
+                        <span class="badge fs-6 {% if rule.action == 'ALLOW' %}badge-allow{% else %}badge-deny{% endif %}">
+                            {{ rule.action }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="fw-medium">{{ rule.description }}</div>
+                        <small class="text-muted mono">Rule #{{ rule.id }}</small>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <form action="{{ url_for('toggle_rule_view', rule_id=rule.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                    title="{{ 'Disable' if rule.is_enabled else 'Enable' }}">
+                                <i class="bi bi-power"></i>
+                            </button>
+                        </form>
+                        <a href="{{ url_for('edit_rule_view', rule_id=rule.id) }}"
+                           class="btn btn-sm btn-outline-info" title="Edit Rule">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{{ url_for('delete_rule_view', rule_id=rule.id) }}" method="POST"
+                              class="d-inline" onsubmit="return confirm('Delete Rule #{{ rule.id }}?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Rule">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        No firewall rules configured. Traffic falls back to default policy ({{ default_policy }}).
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

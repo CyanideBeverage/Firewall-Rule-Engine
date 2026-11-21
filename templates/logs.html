@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Traffic Logs | Firewall Rule Engine{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold mb-0">SIEM Packet Audit Logs</h3>
+        <small class="text-muted">Complete historical record of every packet inspected by the firewall engine.</small>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('logs_view', decision='ALL') }}"
+               class="btn btn-sm {% if current_filter == 'ALL' %}btn-info text-dark fw-semibold{% else %}btn-outline-info{% endif %}">
+                All Traffic
+            </a>
+            <a href="{{ url_for('logs_view', decision='ALLOW') }}"
+               class="btn btn-sm {% if current_filter == 'ALLOW' %}btn-success{% else %}btn-outline-success{% endif %}">
+                Allowed Only
+            </a>
+            <a href="{{ url_for('logs_view', decision='DENY') }}"
+               class="btn btn-sm {% if current_filter == 'DENY' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                Denied Only
+            </a>
+        </div>
+
+        <a href="{{ url_for('export_logs') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+        </a>
+
+        <form action="{{ url_for('clear_logs_view') }}" method="POST"
+              onsubmit="return confirm('Clear all traffic audit logs?');" class="m-0">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash me-1"></i> Clear Logs
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Live Log Search -->
+<div class="soc-card p-3 mb-3">
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search text-info"></i></span>
+        <input type="text" id="liveTableSearch" class="form-control"
+               placeholder="Search logs by IP address, port, protocol, rule, or reason...">
+    </div>
+</div>
+
+<div class="soc-card overflow-hidden">
+    <div class="table-responsive">
+        <table class="table soc-table small">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Direction</th>
+                    <th>Source IP:Port</th>
+                    <th>Dest IP:Port</th>
+                    <th>Protocol</th>
+                    <th>Decision</th>
+                    <th>Matching Rule</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr class="searchable-row">
+                    <td class="text-nowrap text-muted mono">{{ log.timestamp }}</td>
+                    <td><span class="badge bg-secondary bg-opacity-50">{{ log.direction }}</span></td>
+                    <td><code>{{ log.source_ip }}:{{ log.source_port }}</code></td>
+                    <td><code>{{ log.dest_ip }}:{{ log.dest_port }}</code></td>
+                    <td><span class="badge badge-proto">{{ log.protocol }}</span></td>
+                    <td>
+                        <span class="badge {% if log.decision == 'ALLOW' %}badge-allow{% else %}badge-deny{% endif %}">
+                            {{ log.decision }}
+                        </span>
+                    </td>
+                    <td>{{ log.matched_rule_desc }}</td>
+                    <td class="text-muted">{{ log.reason }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        No packet logs found for this filter.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
